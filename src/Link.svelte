@@ -39,5 +39,5 @@
 </script>
 
 <a href="{href}" aria-current="{ariaCurrent}" on:click="{onClick}" {...$$restProps} {...props}>
-  <slot></slot>
+  <slot {isCurrent} {isPartiallyCurrent}></slot>
 </a>
