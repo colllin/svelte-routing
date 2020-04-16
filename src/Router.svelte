@@ -6,15 +6,16 @@
   import { globalLocation } from './stores.js';
 
   export let basepath = "/";
-  export let path = null;
+  export let location = null;
 
-  const pathWritable = writable(path);
-  $: pathWritable.set(path);
+  const maybeConvertPathToLocation = (location) => location && (location.pathname ? location : {pathname: location});
+  const locationPropWritable = writable(maybeConvertPathToLocation(location));
+  $: locationPropWritable.set(maybeConvertPathToLocation(location));
   const contextLocation = getContext(LOCATION);
-  const routerLocationReadable = derived([pathWritable, contextLocation, globalLocation], ($path, $contextLocation, $globalLocation) => {
+  const routerLocationReadable = derived([locationPropWritable, contextLocation, globalLocation], ($locationProp, $contextLocation, $globalLocation) => {
       // If the `path` prop is given we force the location to it.
       // If locationContext is not set, then we derive from window location.
-      return $path ? {pathname: $path} : $contextLocation || $globalLocation;
+      return $locationProp || $contextLocation || $globalLocation;
   });
   setContext(LOCATION, routerLocationReadable);
 
@@ -116,4 +117,4 @@
   });
 </script>
 
-<slot location={$routerLocationReadable}></slot>
+<slot location={$routerLocationReadable} {activeRoute}></slot>
