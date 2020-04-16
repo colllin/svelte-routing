@@ -2,24 +2,26 @@
   import { getContext, setContext, onMount } from "svelte";
   import { writable, derived } from "svelte/store";
   import { LOCATION, ROUTER } from "./contexts.js";
-  import { globalHistory } from "./history.js";
   import { pick, match, stripSlashes, combinePaths } from "./utils.js";
+  import { globalLocation } from './stores.js';
 
   export let basepath = "/";
-  export let url = null;
+  export let path = null;
 
-  const locationContext = getContext(LOCATION);
+  const pathWritable = writable(path);
+  $: pathWritable.set(path);
+  const contextLocation = getContext(LOCATION);
+  const routerLocationReadable = derived([pathWritable, contextLocation, globalLocation], ($path, $contextLocation, $globalLocation) => {
+      // If the `path` prop is given we force the location to it.
+      // If locationContext is not set, then we derive from window location.
+      return $path ? {pathname: $path} : $contextLocation || $globalLocation;
+  });
+  setContext(LOCATION, routerLocationReadable);
+
   const routerContext = getContext(ROUTER);
-
   const routes = writable([]);
   const activeRoute = writable(null);
   let hasActiveRoute = false; // Used in SSR to synchronously set that a Route is active.
-
-  // If locationContext is not set, this is the topmost Router in the tree.
-  // If the `url` prop is given we force the location to it.
-  const location =
-    locationContext ||
-    writable(url ? { pathname: url } : globalHistory.location);
 
   // If routerContext is set, the routerBase of the parent Router
   // will be the base for this Router's descendants.
@@ -65,7 +67,7 @@
         return;
       }
 
-      const matchingRoute = match(route, $location.pathname);
+      const matchingRoute = match(route, $routerLocationReadable.pathname);
       if (matchingRoute) {
         activeRoute.set(matchingRoute);
         hasActiveRoute = true;
@@ -100,23 +102,10 @@
   // will not find an active Route in SSR and in the browser it will only
   // pick an active Route after all Routes have been registered.
   $: {
-    const bestMatch = pick($routes, $location.pathname);
+    const bestMatch = pick($routes, $routerLocationReadable.pathname);
     activeRoute.set(bestMatch);
   }
 
-  if (!locationContext) {
-    // The topmost Router in the tree is responsible for updating
-    // the location store and supplying it through context.
-    onMount(() => {
-      const unlisten = globalHistory.listen(history => {
-        location.set(history.location);
-      });
-
-      return unlisten;
-    });
-
-    setContext(LOCATION, location);
-  }
 
   setContext(ROUTER, {
     activeRoute,
@@ -127,4 +116,4 @@
   });
 </script>
 
-<slot></slot>
+<slot location={$routerLocationReadable}></slot>
