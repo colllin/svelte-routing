@@ -11,7 +11,7 @@
   const maybeConvertPathToLocation = (location) => location && (location.pathname ? location : {pathname: location});
   const locationPropWritable = writable(maybeConvertPathToLocation(location));
   $: locationPropWritable.set(maybeConvertPathToLocation(location));
-  const contextLocation = getContext(LOCATION) || null;
+  const contextLocation = getContext(LOCATION) || writable(null);
   const routerLocationReadable = derived([locationPropWritable, contextLocation, globalLocation], ($locationProp, $contextLocation, $globalLocation) => {
       // If the `path` prop is given we force the location to it.
       // If locationContext is not set, then we derive from window location.
