@@ -25,7 +25,6 @@
 
   const routerContext = getContext(ROUTER);
   const routes = writable([]);
-  $: activeRouteStore.set() = $activeRoute ? !!($activeRoute.path || ($activeRoute.path === ''));
 
   // If routerContext is set, the routerBase of the parent Router
   // will be the base for this Router's descendants.
