@@ -7,6 +7,10 @@
 
   export let basepath = "/";
   export let location = null;
+  export let activeRouteStore = writable(null);
+  // $: if (!activeRouteStore) {
+  //     activeRouteStore = writable(null);
+  // }
 
   const maybeConvertPathToLocation = (location) => location && (location.pathname ? location : {pathname: location});
   const locationPropWritable = writable(maybeConvertPathToLocation(location));
@@ -21,8 +25,7 @@
 
   const routerContext = getContext(ROUTER);
   const routes = writable([]);
-  const activeRoute = writable(null);
-  let hasActiveRoute = false; // Used in SSR to synchronously set that a Route is active.
+  $: activeRouteStore.set() = $activeRoute ? !!($activeRoute.path || ($activeRoute.path === ''));
 
   // If routerContext is set, the routerBase of the parent Router
   // will be the base for this Router's descendants.
@@ -35,14 +38,14 @@
         uri: basepath
       });
 
-  const routerBase = derived([base, activeRoute], ([base, activeRoute]) => {
-    // If there is no activeRoute, the routerBase will be identical to the base.
-    if (activeRoute === null) {
-      return base;
+  const routerBase = derived([base, activeRouteStore], ([$base, $activeRoute]) => {
+    // If there is no $activeRoute, the routerBase will be identical to the $base.
+    if ($activeRoute === null) {
+      return $base;
     }
 
-    const { path: basepath } = base;
-    const { route, uri } = activeRoute;
+    const { path: basepath } = $base;
+    const { route, uri } = $activeRoute;
     // Remove the potential /* or /*splatname from
     // the end of the child Routes relative paths.
     const path = route.default ? basepath : route.path.replace(/\*.*$/, "");
@@ -64,14 +67,13 @@
       // In SSR we should set the activeRoute immediately if it is a match.
       // If there are more Routes being registered after a match is found,
       // we just skip them.
-      if (hasActiveRoute) {
+      if ($activeRouteStore) {
         return;
       }
 
       const matchingRoute = match(route, $routerLocationReadable.pathname);
       if (matchingRoute) {
-        activeRoute.set(matchingRoute);
-        hasActiveRoute = true;
+        activeRouteStore.set(matchingRoute);
       }
     } else {
       routes.update(rs => {
@@ -104,12 +106,12 @@
   // pick an active Route after all Routes have been registered.
   $: {
     const bestMatch = pick($routes, $routerLocationReadable.pathname);
-    activeRoute.set(bestMatch);
+    activeRouteStore.set(bestMatch);
   }
 
 
   setContext(ROUTER, {
-    activeRoute,
+    activeRoute: derived(activeRouteStore, $activeRoute => $activeRoute),
     base,
     routerBase,
     registerRoute,
