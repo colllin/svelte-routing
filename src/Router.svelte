@@ -1,5 +1,5 @@
 <script>
-  import { getContext, setContext, onMount } from "svelte";
+  import { getContext, setContext, onMount, onDestroy } from "svelte";
   import { writable, derived } from "svelte/store";
   import { LOCATION, ROUTER } from "./contexts.js";
   import { pick, match, stripSlashes, combinePaths } from "./utils.js";
@@ -10,10 +10,7 @@
   export let activeRoute = null;
   const activeRouteWritable = writable(null);
   const activeRouteReadable = derived(activeRouteWritable, $activeRoute => $activeRoute);
-  $: console.log('$activeRouteReadable', $activeRouteReadable);
-  // $: console.log('activeRouteReadable.get()', activeRouteReadable.get());
-  activeRouteReadable.subscribe($activeRoute => console.log('activeRouteReadable.subscribe()', $activeRoute))
-  $: activeRoute = $activeRouteReadable;
+  onDestroy(activeRouteReadable.subscribe($activeRoute => activeRoute = $activeRoute));
   $: console.log('activeRoute', activeRoute);
 
   const maybeConvertPathToLocation = (location) => location && (location.pathname ? location : {pathname: location});
@@ -114,7 +111,7 @@
 
 
   setContext(ROUTER, {
-    activeRoute: derived(activeRouteWritable, $activeRoute => $activeRoute),
+    activeRoute: activeRouteReadable,
     base,
     routerBase,
     registerRoute,
