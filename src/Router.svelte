@@ -8,9 +8,9 @@
   export let basepath = "/";
   export let location = null;
   export let activeRoute = null;
-  let activeRouteStore = writable(null);
+  const activeRouteStore = writable(null);
   $: console.log('$activeRouteStore', $activeRouteStore);
-  $: console.log('activeRouteStore.get()', activeRouteStore.get());
+  // $: console.log('activeRouteStore.get()', activeRouteStore.get());
   activeRouteStore.subscribe($activeRoute => console.log('activeRouteStore.subscribe()', $activeRoute))
   $: activeRoute = $activeRouteStore;
   $: console.log('activeRoute', activeRoute);
