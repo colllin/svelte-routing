@@ -9,8 +9,10 @@
   export let location = null;
   export let activeRoute = null;
   const activeRouteWritable = writable(null);
-  const setActiveRoute = route => {
-      if (route != $activeRouteWritable) activeRouteWritable.set(route);
+  const setActiveRoute = routeInfo => {
+      let newRoute = (routeInfo || {}).route;
+      let oldRoute = ($activeRouteWritable || {}).route;
+      if (newRoute !== oldRoute) activeRouteWritable.set(routeInfo);
   }
   const activeRouteReadable = derived(activeRouteWritable, $activeRoute => $activeRoute);
   onDestroy(activeRouteReadable.subscribe($activeRoute => activeRoute = $activeRoute));
