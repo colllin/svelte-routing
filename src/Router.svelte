@@ -118,4 +118,4 @@
   });
 </script>
 
-<slot location={$routerLocationReadable} {activeRoute}></slot>
+<slot location={$routerLocationReadable}></slot>
