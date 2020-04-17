@@ -7,7 +7,7 @@
 
   export let basepath = "/";
   export let location = null;
-  export let activeRoute;
+  export let activeRoute = null;
   let activeRouteStore = writable(null);
   $: activeRoute = $activeRouteStore;
 
