@@ -11,6 +11,7 @@
   const activeRouteWritable = writable(null);
   const activeRouteReadable = derived(activeRouteWritable, $activeRoute => $activeRoute);
   onDestroy(activeRouteReadable.subscribe($activeRoute => activeRoute = $activeRoute));
+  $: console.log('$activeRouteReadable', $activeRouteReadable);
   $: console.log('activeRoute', activeRoute);
 
   const maybeConvertPathToLocation = (location) => location && (location.pathname ? location : {pathname: location});
