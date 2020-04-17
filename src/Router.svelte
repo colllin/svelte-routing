@@ -9,11 +9,9 @@
   export let location = null;
   export let activeRoute = null;
   let activeRouteStore = writable(null);
+  $: console.log('$activeRouteStore', $activeRouteStore);
   $: activeRoute = $activeRouteStore;
-
-  // $: if (!activeRouteStore) {
-  //     activeRouteStore = writable(null);
-  // }
+  $: console.log('activeRoute', activeRoute);
 
   const maybeConvertPathToLocation = (location) => location && (location.pathname ? location : {pathname: location});
   const locationPropWritable = writable(maybeConvertPathToLocation(location));
