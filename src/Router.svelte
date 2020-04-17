@@ -11,7 +11,7 @@
   const activeRouteWritable = writable(null);
   const activeRouteReadable = derived(activeRouteWritable, $activeRoute => $activeRoute);
   $: console.log('$activeRouteReadable', $activeRouteReadable);
-  $: console.log('activeRouteReadable.get()', activeRouteReadable.get());
+  // $: console.log('activeRouteReadable.get()', activeRouteReadable.get());
   activeRouteReadable.subscribe($activeRoute => console.log('activeRouteReadable.subscribe()', $activeRoute))
   $: activeRoute = $activeRouteReadable;
   $: console.log('activeRoute', activeRoute);
