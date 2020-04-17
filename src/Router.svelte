@@ -105,7 +105,7 @@
   // pick an active Route after all Routes have been registered.
   $: {
     const bestMatch = pick($routes, $routerLocationReadable.pathname);
-    activeRouteWritable.set(bestMatch);
+    if (bestMatch !== $activeRouteWritable) activeRouteWritable.set(bestMatch);
   }
 
 
