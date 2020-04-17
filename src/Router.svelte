@@ -9,6 +9,9 @@
   export let location = null;
   export let activeRoute = null;
   const activeRouteWritable = writable(null);
+  const setActiveRoute = route => {
+      if (route != $activeRouteWritable) activeRouteWritable.set(route);
+  }
   const activeRouteReadable = derived(activeRouteWritable, $activeRoute => $activeRoute);
   onDestroy(activeRouteReadable.subscribe($activeRoute => activeRoute = $activeRoute));
 
@@ -72,7 +75,7 @@
 
       const matchingRoute = match(route, $routerLocationReadable.pathname);
       if (matchingRoute) {
-        activeRouteWritable.set(matchingRoute);
+        setActiveRoute(matchingRoute);
       }
     } else {
       routes.update(rs => {
@@ -105,7 +108,7 @@
   // pick an active Route after all Routes have been registered.
   $: {
     const bestMatch = pick($routes, $routerLocationReadable.pathname);
-    if (bestMatch !== $activeRouteWritable) activeRouteWritable.set(bestMatch);
+    setActiveRoute(bestMatch);
   }
 
 
