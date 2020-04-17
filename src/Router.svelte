@@ -7,7 +7,10 @@
 
   export let basepath = "/";
   export let location = null;
-  export let activeRouteStore = writable(null);
+  export let activeRoute;
+  let activeRouteStore = writable(null);
+  $: activeRoute = $activeRouteStore;
+
   // $: if (!activeRouteStore) {
   //     activeRouteStore = writable(null);
   // }
