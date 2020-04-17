@@ -7,12 +7,10 @@
 
   export let basepath = "/";
   export let location = null;
-  export const status = {};
+  export let activeRoute = null;
   const activeRouteWritable = writable(null);
   const activeRouteReadable = derived(activeRouteWritable, $activeRoute => $activeRoute);
-  $: status.activeRoute = $activeRouteReadable;
-  // onDestroy(activeRouteReadable.subscribe($activeRoute => activeRoute = $activeRoute));
-  // $: console.log('activeRoute', activeRoute);
+  onDestroy(activeRouteReadable.subscribe($activeRoute => activeRoute = $activeRoute));
 
   const maybeConvertPathToLocation = (location) => location && (location.pathname ? location : {pathname: location});
   const locationPropWritable = writable(maybeConvertPathToLocation(location));
