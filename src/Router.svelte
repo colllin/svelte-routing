@@ -8,11 +8,12 @@
   export let basepath = "/";
   export let location = null;
   export let activeRoute = null;
-  const activeRouteStore = writable(null);
-  $: console.log('$activeRouteStore', $activeRouteStore);
-  // $: console.log('activeRouteStore.get()', activeRouteStore.get());
-  activeRouteStore.subscribe($activeRoute => console.log('activeRouteStore.subscribe()', $activeRoute))
-  $: activeRoute = $activeRouteStore;
+  const activeRouteWritable = writable(null);
+  const activeRouteReadable = derived(activeRouteWritable, $activeRoute => $activeRoute);
+  $: console.log('$activeRouteReadable', $activeRouteReadable);
+  $: console.log('activeRouteReadable.get()', activeRouteReadable.get());
+  activeRouteReadable.subscribe($activeRoute => console.log('activeRouteReadable.subscribe()', $activeRoute))
+  $: activeRoute = $activeRouteReadable;
   $: console.log('activeRoute', activeRoute);
 
   const maybeConvertPathToLocation = (location) => location && (location.pathname ? location : {pathname: location});
@@ -40,7 +41,7 @@
         uri: basepath
       });
 
-  const routerBase = derived([base, activeRouteStore], ([$base, $activeRoute]) => {
+  const routerBase = derived([base, activeRouteWritable], ([$base, $activeRoute]) => {
     // If there is no $activeRoute, the routerBase will be identical to the $base.
     if ($activeRoute === null) {
       return $base;
@@ -69,13 +70,13 @@
       // In SSR we should set the activeRoute immediately if it is a match.
       // If there are more Routes being registered after a match is found,
       // we just skip them.
-      if ($activeRouteStore) {
+      if ($activeRouteWritable) {
         return;
       }
 
       const matchingRoute = match(route, $routerLocationReadable.pathname);
       if (matchingRoute) {
-        activeRouteStore.set(matchingRoute);
+        activeRouteWritable.set(matchingRoute);
       }
     } else {
       routes.update(rs => {
@@ -108,12 +109,12 @@
   // pick an active Route after all Routes have been registered.
   $: {
     const bestMatch = pick($routes, $routerLocationReadable.pathname);
-    activeRouteStore.set(bestMatch);
+    activeRouteWritable.set(bestMatch);
   }
 
 
   setContext(ROUTER, {
-    activeRoute: derived(activeRouteStore, $activeRoute => $activeRoute),
+    activeRoute: derived(activeRouteWritable, $activeRoute => $activeRoute),
     base,
     routerBase,
     registerRoute,
