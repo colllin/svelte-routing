@@ -10,19 +10,15 @@
   export let activeRoute = null;
   const activeRouteWritable = writable(null);
   const setActiveRoute = routeInfo => {
-      if (!routeInfo) {
-          // Always set falsey values.
-          activeRouteWritable.set(routeInfo);
-          return;
-      }
       let newRoute = (routeInfo || {}).route;
       let oldRoute = ($activeRouteWritable || {}).route;
-      if (newRoute !== oldRoute) {
+      // Always set falsey values.
+      if (!newRoute || (newRoute !== oldRoute)) {
           activeRouteWritable.set(routeInfo);
+          activeRoute = routeInfo;
       }
   }
   const activeRouteReadable = derived(activeRouteWritable, $activeRoute => $activeRoute);
-  onDestroy(activeRouteReadable.subscribe($activeRoute => activeRoute = $activeRoute));
 
   const maybeConvertPathToLocation = (location) => location && (location.pathname ? location : {pathname: location});
   const locationPropWritable = writable(maybeConvertPathToLocation(location));
