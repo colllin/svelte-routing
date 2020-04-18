@@ -10,14 +10,16 @@
   export let activeRoute = null;
   const activeRouteWritable = writable(null);
   const setActiveRoute = routeInfo => {
-      activeRouteWritable.set(routeInfo);
-      // if (!routeInfo) {
-      //     // Always set falsey values.
-      //     activeRouteWritable.set(routeInfo);
-      // }
-      // let newRoute = (routeInfo || {}).route;
-      // let oldRoute = ($activeRouteWritable || {}).route;
-      // if (!newRoute || newRoute !== oldRoute) activeRouteWritable.set(routeInfo);
+      if (!routeInfo) {
+          // Always set falsey values.
+          activeRouteWritable.set(routeInfo);
+          return;
+      }
+      let newRoute = (routeInfo || {}).route;
+      let oldRoute = ($activeRouteWritable || {}).route;
+      if (newRoute !== oldRoute) {
+          activeRouteWritable.set(routeInfo);
+      }
   }
   const activeRouteReadable = derived(activeRouteWritable, $activeRoute => $activeRoute);
   onDestroy(activeRouteReadable.subscribe($activeRoute => activeRoute = $activeRoute));
