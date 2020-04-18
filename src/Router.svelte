@@ -34,12 +34,13 @@
   setContext(LOCATION, routerLocationReadable);
 
   const routes = writable([]);
+  const routerContext = getContext(ROUTER);
 
   // If routerContext is set, the routerBase of the parent Router
   // will be the base for this Router's descendants.
   // If routerContext is not set, the path and resolved uri will both
   // have the value of the basepath prop.
-  const base = getContext(ROUTER)
+  const base = routerContext
     ? routerContext.routerBase
     : writable({
         path: basepath,
