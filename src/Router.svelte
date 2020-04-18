@@ -10,9 +10,14 @@
   export let activeRoute = null;
   const activeRouteWritable = writable(null);
   const setActiveRoute = routeInfo => {
-      let newRoute = (routeInfo || {}).route;
-      let oldRoute = ($activeRouteWritable || {}).route;
-      if (newRoute !== oldRoute) activeRouteWritable.set(routeInfo);
+      activeRouteWritable.set(routeInfo);
+      // if (!routeInfo) {
+      //     // Always set falsey values.
+      //     activeRouteWritable.set(routeInfo);
+      // }
+      // let newRoute = (routeInfo || {}).route;
+      // let oldRoute = ($activeRouteWritable || {}).route;
+      // if (!newRoute || newRoute !== oldRoute) activeRouteWritable.set(routeInfo);
   }
   const activeRouteReadable = derived(activeRouteWritable, $activeRoute => $activeRoute);
   onDestroy(activeRouteReadable.subscribe($activeRoute => activeRoute = $activeRoute));
@@ -28,14 +33,13 @@
   });
   setContext(LOCATION, routerLocationReadable);
 
-  const routerContext = getContext(ROUTER);
   const routes = writable([]);
 
   // If routerContext is set, the routerBase of the parent Router
   // will be the base for this Router's descendants.
   // If routerContext is not set, the path and resolved uri will both
   // have the value of the basepath prop.
-  const base = routerContext
+  const base = getContext(ROUTER)
     ? routerContext.routerBase
     : writable({
         path: basepath,
