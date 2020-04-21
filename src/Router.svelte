@@ -8,17 +8,6 @@
   export let basepath = "/";
   export let location = null;
   export let activeRoute = null;
-  const activeRouteWritable = writable(null);
-  const setActiveRoute = routeInfo => {
-      let newRoute = (routeInfo || {}).route;
-      let oldRoute = ($activeRouteWritable || {}).route;
-      // Always set falsey values.
-      if (!newRoute || (newRoute !== oldRoute)) {
-          activeRouteWritable.set(routeInfo);
-          activeRoute = routeInfo;
-      }
-  }
-  const activeRouteReadable = derived(activeRouteWritable, $activeRoute => $activeRoute);
 
   const maybeConvertPathToLocation = (location) => location && (location.pathname ? location : {pathname: location});
   const locationPropWritable = writable(maybeConvertPathToLocation(location));
@@ -45,7 +34,7 @@
         uri: basepath
       });
 
-  const routerBase = derived([base, activeRouteWritable], ([$base, $activeRoute]) => {
+  const routerBase = derived([base, activeRouteReadable], ([$base, $activeRoute]) => {
     // If there is no $activeRoute, the routerBase will be identical to the $base.
     if ($activeRoute === null) {
       return $base;
@@ -59,6 +48,15 @@
 
     return { path, uri };
   });
+
+  const activeRouteReadable = derived([routerLocationReadable, routes], ([$routerLocation, $routes]) => {
+    // This reactive statement will be run when the Router is created
+    // when there are no Routes and then again the following tick, so it
+    // will not find an active Route in SSR and in the browser it will only
+    // pick an active Route after all Routes have been registered.
+    return pick($routes, $routerLocationReadable.pathname);
+  });
+  $: activeRoute = $activeRouteReadable;
 
   function registerRoute(route) {
     const { path: basepath } = $base;
@@ -74,13 +72,13 @@
       // In SSR we should set the activeRoute immediately if it is a match.
       // If there are more Routes being registered after a match is found,
       // we just skip them.
-      if ($activeRouteWritable) {
+      if ($activeRouteReadable) {
         return;
       }
 
       const matchingRoute = match(route, $routerLocationReadable.pathname);
       if (matchingRoute) {
-        setActiveRoute(matchingRoute);
+        activeRouteReadable = writable(matchingRoute);
       }
     } else {
       routes.update(rs => {
@@ -107,15 +105,6 @@
       return rs;
     });
   }
-  // This reactive statement will be run when the Router is created
-  // when there are no Routes and then again the following tick, so it
-  // will not find an active Route in SSR and in the browser it will only
-  // pick an active Route after all Routes have been registered.
-  $: {
-    const bestMatch = pick($routes, $routerLocationReadable.pathname);
-    setActiveRoute(bestMatch);
-  }
-
 
   setContext(ROUTER, {
     activeRoute: activeRouteReadable,
