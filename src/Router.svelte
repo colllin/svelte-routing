@@ -14,6 +14,7 @@
   $: locationPropWritable.set(maybeConvertPathToLocation(location));
   const contextLocation = getContext(LOCATION) || writable(null);
   const routerLocationReadable = derived([locationPropWritable, contextLocation, globalLocation], ([$locationProp, $contextLocation, $globalLocation]) => {
+      console.log('$locationProp', $locationProp)
       // If the `path` prop is given we force the location to it.
       // If locationContext is not set, then we derive from window location.
       return $locationProp || $contextLocation || $globalLocation;
@@ -27,7 +28,7 @@
     // when there are no Routes and then again the following tick, so it
     // will not find an active Route in SSR and in the browser it will only
     // pick an active Route after all Routes have been registered.
-    return pick($routes, $routerLocationReadable.pathname);
+    return pick($routes, $routerLocation.pathname);
   });
   $: activeRoute = $activeRouteReadable;
 
