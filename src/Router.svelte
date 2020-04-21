@@ -21,8 +21,17 @@
   setContext(LOCATION, routerLocationReadable);
 
   const routes = writable([]);
-  const routerContext = getContext(ROUTER);
 
+  const activeRouteReadable = derived([routerLocationReadable, routes], ([$routerLocation, $routes]) => {
+    // This reactive statement will be run when the Router is created
+    // when there are no Routes and then again the following tick, so it
+    // will not find an active Route in SSR and in the browser it will only
+    // pick an active Route after all Routes have been registered.
+    return pick($routes, $routerLocationReadable.pathname);
+  });
+  $: activeRoute = $activeRouteReadable;
+
+  const routerContext = getContext(ROUTER);
   // If routerContext is set, the routerBase of the parent Router
   // will be the base for this Router's descendants.
   // If routerContext is not set, the path and resolved uri will both
@@ -48,15 +57,6 @@
 
     return { path, uri };
   });
-
-  const activeRouteReadable = derived([routerLocationReadable, routes], ([$routerLocation, $routes]) => {
-    // This reactive statement will be run when the Router is created
-    // when there are no Routes and then again the following tick, so it
-    // will not find an active Route in SSR and in the browser it will only
-    // pick an active Route after all Routes have been registered.
-    return pick($routes, $routerLocationReadable.pathname);
-  });
-  $: activeRoute = $activeRouteReadable;
 
   function registerRoute(route) {
     const { path: basepath } = $base;
