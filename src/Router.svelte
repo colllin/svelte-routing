@@ -19,7 +19,7 @@
       // If the `path` prop is given we force the location to it.
       // If locationContext is not set, then we derive from window location.
       let routerLocation = $locationProp || $contextLocation || $globalLocation;
-      console.log('routerLocationReadable.set()', routerLocation);
+      // console.log('routerLocationReadable.set()', routerLocation);
       return routerLocation;
   });
   setContext(LOCATION, routerLocationReadable);
