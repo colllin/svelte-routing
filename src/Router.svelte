@@ -7,21 +7,22 @@
 
   export let basepath = "/";
   export let location = null;
-  export let activeRoute = null;
+  // export let activeRoute = null;
+  const routes = writable([]);
+  export const hasRoute = (pathname) => !!pick($routes, pathname);
 
   const maybeConvertPathToLocation = (location) => location && (location.pathname ? location : {pathname: location});
   const locationPropWritable = writable(maybeConvertPathToLocation(location));
   $: locationPropWritable.set(maybeConvertPathToLocation(location));
   const contextLocation = getContext(LOCATION) || writable(null);
   const routerLocationReadable = derived([locationPropWritable, contextLocation, globalLocation], ([$locationProp, $contextLocation, $globalLocation]) => {
-      console.log('$locationProp', $locationProp)
       // If the `path` prop is given we force the location to it.
       // If locationContext is not set, then we derive from window location.
-      return $locationProp || $contextLocation || $globalLocation;
+      let routerLocation = $locationProp || $contextLocation || $globalLocation;
+      console.log('routerLocationReadable.set()', routerLocation);
+      return routerLocation;
   });
   setContext(LOCATION, routerLocationReadable);
-
-  const routes = writable([]);
 
   const activeRouteReadable = derived([routerLocationReadable, routes], ([$routerLocation, $routes]) => {
     // This reactive statement will be run when the Router is created
@@ -30,7 +31,7 @@
     // pick an active Route after all Routes have been registered.
     return pick($routes, $routerLocation.pathname);
   });
-  $: activeRoute = $activeRouteReadable;
+  // $: activeRoute = $activeRouteReadable;
 
   const routerContext = getContext(ROUTER);
   // If routerContext is set, the routerBase of the parent Router
